@@ -13,7 +13,7 @@ public class TankFrame extends Frame {
     public static final int GAME_HEIGHT = 600;
     public static  int TANK_NUM = 5;
     private ArrayList<Tank> tanks = new ArrayList<>(5);
-    private Tank mainTank = new Tank((GAME_WEIGHT - Tank.T_WEIGHT) / 2, (GAME_HEIGHT - Tank.T_HEIGHT) / 2, Dir.UP, this,Group.GOOD);
+    private Tank mainTank = new Tank((GAME_WEIGHT - Tank.T_WEIGHT) / 2, (GAME_HEIGHT - Tank.T_HEIGHT) / 2, Dir.UP,false, this,Group.GOOD);
     private ArrayList<Bullet> bullets = new ArrayList<>();
     private ArrayList<Boom> booms = new ArrayList<Boom>();
 
@@ -174,6 +174,8 @@ public class TankFrame extends Frame {
         Color color = g.getColor();
         g.setColor(Color.white);
         g.drawString("当前子弹数为 " + bullets.size() + " ", 10, 60);
+        g.drawString("当前敌方坦克数为 " + tanks.size() + " ", 10, 90);
+        g.drawString("当前爆炸数为 " + booms.size() + " ", 10, 120);
         g.setColor(color);
 
 //        将系统画笔递给tank对象，让他把自己画出来
@@ -203,15 +205,25 @@ public class TankFrame extends Frame {
 //            else iterator.remove();
 //        }
 
+
+        //            爆炸不需要happen这个标识，因为爆炸有开始就会由结束，如果发生了碰撞就把爆炸画出来即可
+        // 爆炸得放在碰撞检测之前，因为爆炸的位置时碰撞检测后才确定的，
+        for(int k=0; k<booms.size(); k++){
+            booms.get(k).paint(g);
+        }
+
+
         for (int i = 0; i < bullets.size(); i++) {
             Bullet b = bullets.get(i);
 
             for(Tank tank: tanks){
                 //碰撞检测只负责如果产生碰撞修改，子弹和tank为死亡状态
+                System.out.println(b.getX() + " &&&&& " + b.getY());
                 b.collisingWithTank(tank);
             }
             //                添加主坦克的碰撞检测
-            //                添加子弹和tank的碰撞检测，每个子弹和所有坦克的碰撞检测
+            //                添加子弹和tank的碰撞检测，每个子弹和所有坦克的碰撞检测才定下的，如果放到后面，会出现
+            //                 爆炸发生的位置是上次碰撞检测的位置
             if (b.isLive()) {
                 //画出子弹
                 b.paint(g);
@@ -219,15 +231,17 @@ public class TankFrame extends Frame {
                 bullets.remove(b);
             }
 
-//            画出每个子弹碰撞时产生的爆炸
-            for(int j=0; j<booms.size(); j++){
-                if(!booms.get(j).isHappen()){
-                    booms.remove(booms.get(i));
-                }else {
-                    booms.get(j).paint(g);
-                }
+//            画出每个子弹碰撞时产生的爆炸【自己实现的】
+//            for(int j=0; j<booms.size(); j++){
+//                if(!booms.get(j).isHappen()){
+//                    booms.remove(booms.get(i));
+//                }else {
+//                    booms.get(j).paint(g);
+//                }
+//
+//            }
 
-            }
+
         }
 
 
